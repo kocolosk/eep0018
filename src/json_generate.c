@@ -9,16 +9,6 @@ static int encode_long(const char *buf, int *index, yajl_gen g) {
     return yajl_gen_integer(g, number);
 }
 
-/* think about bignum support later, need gmp or similar */
-static int encode_ulong(const char *buf, int *index, yajl_gen g) {
-    unsigned long number;
-    if (ei_decode_ulong(buf, index, &number)) return -1;
-    /* yajl doesn't support ulong, so print to string first */
-    char numstring[11];
-    sprintf(numstring, "%lu", number);
-    return yajl_gen_number(g, numstring, strlen(numstring));
-}
-
 static int encode_ulonglong(const char *buf, int *index, yajl_gen g) {
     unsigned long long number;
     if (ei_decode_ulonglong(buf, index, &number)) return -1;
@@ -40,9 +30,10 @@ static int encode_longlong(const char *buf, int *index, yajl_gen g) {
     return yajl_gen_number(g, numstring, strlen(numstring));
 }
 
+/* think about bignum support later, need gmp or similar
 static int encode_bignum(const char *buf, int *index, yajl_gen g) {
     return 0;
-}
+}*/
 
 /* all floating-point numbers are sent with double-precision */
 static int encode_double(const char *buf, int *index, yajl_gen g) {
@@ -51,22 +42,22 @@ static int encode_double(const char *buf, int *index, yajl_gen g) {
     return yajl_gen_double(g, number);
 }
 
-/* this might not get called, instead just check true/false in decode_atom */
+/* this does not get called, instead just check true/false in decode_atom
 static int encode_boolean(const char *buf, int *index, yajl_gen g) {
     fprintf(stderr, "called encode_boolean\r\n");
     int boolean;
     if (ei_decode_boolean(buf, index, &boolean)) return -1;
     return yajl_gen_bool(g, boolean);
-}
+}*/
 
 /* this is a list of integers -- real strings must be binaries */
 static int encode_string(const char *buf, int *index, int len, yajl_gen g) {
     char thestring[len+1];
     int stat, i;
     if (ei_decode_string(buf, index, thestring)) return -1;
-    if (stat = yajl_gen_array_open(g)) return stat;
+    if ( (stat = yajl_gen_array_open(g)) ) return stat;
     for (i=0; i<len; ++i) {
-        if (stat = yajl_gen_integer(g, (int)(thestring[i]))) return stat;
+        if ( (stat = yajl_gen_integer(g, (int)(thestring[i]))) ) return stat;
     }
     return yajl_gen_array_close(g);
 }
@@ -103,13 +94,13 @@ static int encode_list_elements(const char *buf, int *index, yajl_gen g) {
     if (ei_decode_list_header(buf, index, &arity)) return -1;
     if (arity > 0) {
         for (i=0; i<arity; ++i) {
-            if (stat = encode(buf, index, g)) return stat;
+            if ( (stat = encode(buf, index, g)) ) return stat;
         }
 
         /* now for the tail: if it's an empty list, ignore */
         if (ei_decode_list_header(buf, index, &arity)) return -1;
         if (arity > 0) {
-            if (stat = encode(buf, index, g)) return stat;
+            if ( (stat = encode(buf, index, g)) ) return stat;
         }
     }
     return yajl_gen_status_ok;
@@ -118,7 +109,7 @@ static int encode_list_elements(const char *buf, int *index, yajl_gen g) {
 static int encode_list(const char *buf, int *index, int len, yajl_gen g) {
     int stat;
     yajl_gen_array_open(g);
-    if (stat = encode_list_elements(buf, index, g)) return stat;
+    if ( (stat = encode_list_elements(buf, index, g)) ) return stat;
     return yajl_gen_array_close(g);
 }
 
@@ -132,12 +123,12 @@ static int encode_tuple(const char *buf, int *index, int len, yajl_gen g) {
         if (ei_get_type(buf, index, &type, &size)) return -1;
         assert(type == ERL_LIST_EXT || type == ERL_NIL_EXT);
         yajl_gen_map_open(g);
-        if (stat = encode_list_elements(buf, index, g)) return stat;
+        if ( (stat = encode_list_elements(buf, index, g)) ) return stat;
         return yajl_gen_map_close(g);
     }
     else if (arity == 2) {
-        if (stat = encode(buf, index, g)) return stat;
-        if (stat = encode(buf, index, g)) return stat;
+        if ( (stat = encode(buf, index, g)) ) return stat;
+        if ( (stat = encode(buf, index, g)) ) return stat;
         return 0;
     }
     return 10;
