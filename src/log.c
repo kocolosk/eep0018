@@ -22,7 +22,7 @@ void do_fdump(FILE* file, const void *_buf, int len) {
     for(i=0; i<line_len; ++i) {
       fprintf(file,  i < len ? "%c" : " ", isprint(buf[i]) ? buf[i] : '.');
     }
-    fprintf(file, "\n");
+    fprintf(file, "\r\n");
     
     len -= line_len;
     buf += line_len;
@@ -32,11 +32,11 @@ void do_fdump(FILE* file, const void *_buf, int len) {
 
 void do_flog(FILE* file, const char* label, int mode, const void *buf, int len) {
   if(mode)
-    fprintf(file, "%s *** 0x%02x: %d byte *****\n", label, mode, len);
+    fprintf(file, "%s *** 0x%02x: %d byte *****\r\n", label, mode, len);
   else if(buf)
-    fprintf(file, "%s *** %d byte *****\n", label, len);
+    fprintf(file, "%s *** %d byte *****\r\n", label, len);
   else
-    fprintf(file, "%s\n", label);
+    fprintf(file, "%s\r\n", label);
 
   do_fdump(file, buf, len);
 }
