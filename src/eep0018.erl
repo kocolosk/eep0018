@@ -10,6 +10,7 @@
 
 %% constants (see eep0018.h)
 
+-define(JSON_GENERATE,  3).
 -define(PARSE_EI,       2).
 -define(PARSE_VALUE, 1).
 
@@ -145,8 +146,7 @@ receive_value(InternOption) ->
       case InternOption#options.parse of
         object -> Adjusted;
         value  -> [ VALUE ] = Adjusted, VALUE
-      end;
-    UNKNOWN -> io:format("UNKNOWN 1 ~p ~n", [UNKNOWN]), UNKNOWN
+      end
   end.
 
 %% adjust returned term %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -201,6 +201,12 @@ loop(Port) ->
       Caller ! {result, Result},
       loop(Port);
 
+    {encode, Caller, Term} ->
+      Port ! {self(), {command, [?JSON_GENERATE, 0|term_to_binary(Term)]}},
+      Result = receive_value(build_options([])),
+      Caller ! {result, Result},
+      loop(Port);
+    
     stop ->
       Port ! {self(), close},
       receive
@@ -209,17 +215,19 @@ loop(Port) ->
 
     {'EXIT', Port, Reason} ->
       io:format("exit ~p ~n", [Reason]),
-      exit(port_terminated);
-      
-    X ->
-      io:format("Unknown input! ~p ~n", [X]),
-      loop(Port)
+      exit(port_terminated)
   end.
 
 %% parse json
 
 parse(X,O)  -> 
   eep0018 ! {parse, self(), X, O},
+  receive
+    {result, Result} -> Result
+  end.
+
+encode(Term) ->
+  eep0018 ! {encode, self(), Term},
   receive
     {result, Result} -> Result
   end.
@@ -232,5 +240,4 @@ json_to_term(X) -> parse(X, []).
 json_to_term(X,O) -> parse(X, O).
 
 % 
-term_to_json(X) -> 
-  rabbitmq:encode(X).
+term_to_json(X) -> encode(X).

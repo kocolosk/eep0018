@@ -27,7 +27,7 @@ LFLAGS=$(GCCFLAGS) $(ERL_LIBS)
 VPATH=src:$(YAJLROOT)/src
 
 YAJL_OBJECTS=yajl.o yajl_encode.o yajl_lex.o yajl_buf.o yajl_gen.o yajl_parser.o
-EEP_OBJECTS=eep0018.o log.o json_parse.o
+EEP_OBJECTS=eep0018.o log.o json_parse.o json_generate.o
 
 PATHS=bin include include/yajl
 

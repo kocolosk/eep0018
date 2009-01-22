@@ -28,6 +28,11 @@ static void eep0018_drv_on_input(ErlDrvData session, char *buf, int len)
   case EEP0018_PARSE_EI: 
     json_parse_to_ei(session, (unsigned char*) buf, len, opts);
     break;
+  
+  case EEP0018_JSON_GENERATE:
+    flog(stderr, "calling generator", 0, buf, len);
+    json_generate(session, buf, len, opts);
+    break;
     
   default:
     flog(stderr, "Unknown input", 0, buf, len);

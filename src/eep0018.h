@@ -4,6 +4,7 @@
 /* commands */
 
 #define EEP0018_PARSE_EI                   2
+#define EEP0018_JSON_GENERATE              3
 
 /* parameters */
 
@@ -71,5 +72,6 @@ static inline int send_data(void* ctx, char type, const char* data, unsigned int
 
 extern void json_parse(ErlDrvData session, const unsigned char* s, int len, int opts);
 extern void json_parse_to_ei(ErlDrvData session, const unsigned char* s, int len, int opts);
+extern void json_generate(ErlDrvData session, const char* buf, int len, int opts);
 
 #endif
